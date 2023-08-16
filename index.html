@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family:Georgia, 'Times New Roman', Times, serif;
+            background-color: #fefbd8;
+        }
+
+        .container {
+            max-width: 800px;
+            max-height: 600px;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            color:#f5eb6c;
+            border-radius: 20px;
+            background-color: rgb(0, 191, 255);
+        }
+
+        .container .game-screen {
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+        }
+
+        .container .screen {
+            flex: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container .screen .score-display, .container .screen .timer-display {
+            position: absolute;
+            top: 5%;
+            font-size: 1.7rem;
+        }
+
+         .container .screen .score-display {
+            left:5%;
+         }
+
+          .container .screen .timer-display {
+            right: 5%;
+          }
+
+        .container .screen .round-display {
+            position: absolute;
+            font-size: 3rem;
+            top: 7%;
+            transform: translateY(-50%);
+        }
+
+          #word {
+            font-size: 4rem ;
+          }
+
+          .input-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+          }
+
+          .input-container .input-display {
+             width: 50%;
+          }
+
+          #answer {
+             width: 100%;
+             padding: 10px 15px;
+             font-size: 2.5rem;
+             outline: none;
+             border: none;
+             font-family: inherit;
+             border-radius: 20px;
+          }
+
+          #answer:disabled {
+            background:rgb(170, 164, 164);
+          }
+
+        .container .end-screen {
+            height: 100%;
+            align-items: center;
+            flex-direction: column;
+            display: none;
+        }
+
+
+        .container .end-screen h1{
+            margin-top: 5rem;
+            font-size: 3rem;
+        }
+        
+        #total-score {
+            font-size: 10rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .container .end-screen button , .container .start-screen button  {
+            font-family: inherit;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 10px 15px;
+            border: none;
+            background-color: #f5eb6c;
+            color: #056805;
+            border-radius: 10px;
+            outline:none;
+        }
+
+        .container .end-screen .total-correct-display {
+            font-size: 2rem;
+        }
+
+        .container .start-screen {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .container .start-screen h1 {
+            margin-top: 6rem;
+            font-size: 3rem;
+        }
+
+        
+        .container .start-screen p {
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        @media only screen and (max-width: 600px) {
+
+            
+            .container .start-screen h1 {
+                font-size: 1.9rem;
+                margin-top: 9rem;
+            }
+
+            .container .screen .score-display, .container .screen .timer-display {
+                font-size: 1.4rem;
+            }
+
+            .container .screen .round-display {
+                font-size: 1.5rem;
+            }   
+        }
+
+       /*  @media only screen and (min-width: 768px) {
+
+            .container .start-screen h1 {
+                font-size: 2rem;
+                margin-top: 9rem;
+            }
+
+            .container .start-screen p {
+                font-size: 1.5rem;
+            }
+
+            .container .screen .score-display, .container .screen .timer-display {
+                font-size: 1.5rem;
+            }
+
+            .container .screen .round-display {
+                font-size: 1.7rem;
+            }   
+        } */
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <div class="start-screen">
+            <h1>Rushype Typing Game</h1>
+            <p>
+                Let's see how fast you can type the word that will be displayed in the screen <br>
+                press <strong>Enter</strong> in the input to submit your answer.
+            </p>
+            <button onclick="fetchWord()">Start Game</button>
+        </div>
+        <div class="game-screen">
+            <div class="screen">
+                <div class="score-display">Score : <span id="score">0</span></div>
+                <div class="round-display">Round : <span id="round">1</span> / 10</div>
+                <div id="word">Getting Word...</div>
+                <div class="timer-display">Time : <span id="time"></span></div>
+            </div>
+            <div class="input-container">
+                <div class="input-display">
+                      <input type="text" id="answer">
+                </div>
+            </div>
+        </div>
+        <div class="end-screen">
+            <h1>Your total score:</h1>
+            <p id="total-score">1000</p>
+            <p class="total-correct-display">You have got <span id="total-correct">0</span> / 10 correct!</p>
+            <button onclick="fetchWord()">Play Again</button>
+        </div>
+    </div>
+
+
+
+    <script type="text/javascript">
+        const startScreen = document.querySelector(".container .start-screen");
+        const gameScreen = document.querySelector(".container .game-screen");
+        const endScreen = document.querySelector(".container .end-screen");
+
+        const wordDisplay = document.getElementById("word");
+        const answerElement = document.getElementById("answer");     
+        const timer = document.getElementById("time");
+
+        let score = 0;
+        let round = 1;
+        let corrects = 0;
+
+        let startTime;
+        let total_time = 0;
+        let intervalId;
+
+        const highestScore = 500;
+
+
+        function fetchWord() {
+            gameStart();
+            answerElement.setAttribute("disabled",true);
+            wordDisplay.innerHTML = "Getting Word...";
+            fetch("https://random-word-api.herokuapp.com/word")
+                .then(response => response.json())
+                .then(data => startTyping(data[0]));
+        }
+
+
+        function startTyping(word) {
+            startTime = Date.now();
+            wordDisplay.innerHTML = word;
+            answerElement.removeAttribute("disabled");
+            answerElement.addEventListener("keydown",checkInput);
+            changeBackground("#fefbd8");
+
+            if (!intervalId) {
+                intervalId = setInterval(updateTimer,1);
+            }
+
+            answerElement.focus();
+        }
+
+        function checkInput(event) {
+            if (event.key == "Enter") {
+                submitAnswer();
+            }
+        }
+
+        function submitAnswer() {
+            round++;
+            checkAnswer();
+        }
+
+        function checkAnswer() {
+            let word = wordDisplay.innerHTML;
+            let answer = answerElement.value;
+
+            if (word === answer) {
+                score += highestScore - (total_time * 70) ;
+                corrects++;
+                changeBackground("#27b376");
+            }
+            else {
+                changeBackground("#D82E3F");
+            }
+
+            displayScore();
+            displayRound();
+        }
+
+        function resetAll() {
+            clearInterval(intervalId);
+            intervalId = null;
+            answerElement.value = "";
+            timer.innerHTML = "";
+        }
+
+        function displayRound() {
+            const roundDisplay = document.getElementById("round");
+            roundDisplay.innerHTML = `${round}`;
+
+            resetAll();
+
+            if (round == 11) {
+                gameEnd();
+                
+            } else {
+                fetchWord();
+            }
+        }
+
+        function displayScore() {
+            const scoreDisplay = document.getElementById("score");
+            scoreDisplay.innerHTML = `${score}`;
+        }
+
+
+        function updateTimer() {
+            let newTime = Date.now();
+            total_time = `${Math.floor((newTime - startTime) / 1000)}`;
+            timer.innerHTML = total_time;
+        }
+
+        function gameEnd() {
+            gameScreen.style.display = "none";
+            endScreen.style.display = "flex";
+
+            const totalScoreDisplay = document.getElementById("total-score");
+            totalScoreDisplay.innerHTML = score;
+
+            const totalCorrectDisplay = document.getElementById("total-correct");
+            totalCorrectDisplay.innerHTML = corrects;
+        }
+
+        function gameStart() {
+            gameScreen.style.display = "flex";        
+            endScreen.style.display = "none";
+            startScreen.style.display = "none";
+        }
+
+        function changeBackground(color) {
+            document.body.style.background = color;
+        }
+
+
+       // window.addEventListener("DOMContentLoaded",fetchWord);
+    </script>
+</body>
+</html>

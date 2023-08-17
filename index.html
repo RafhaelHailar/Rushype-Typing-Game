@@ -301,6 +301,9 @@
             resetAll();
 
             if (round == 11) {
+                
+                round = 1;
+                roundDisplay.innerHTML = `${round}`;
                 gameEnd();
                 
             } else {
@@ -335,7 +338,6 @@
             gameScreen.style.display = "flex";        
             endScreen.style.display = "none";
             startScreen.style.display = "none";
-            round = 0;
         }
 
         function changeBackground(color) {
